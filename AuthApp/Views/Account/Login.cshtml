@@ -1,0 +1,32 @@
+﻿@model MeetingRoom.Models.AuthModel.LoginModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+    <div style="width: 300px; margin: 0 auto; padding-top: 100px;">
+        <form method="post" asp-controller="Account" asp-action="Login">
+            <div>
+                <label asp-for="Email">Email:</label><br />
+                <input asp-for="Email" class="form-control" required /><br />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div style="margin-top: 10px;">
+                <label asp-for="Password">Password:</label><br />
+                <input asp-for="Password" type="password" class="form-control" required /><br />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button type="submit" class="btn btn-primary">Login</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
