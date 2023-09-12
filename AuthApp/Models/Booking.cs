@@ -30,8 +30,8 @@ namespace MeetingRoom.Models
 
         [Display(Name = "Status")]
         public string Status { get; set; } = "Available";
-        public string? UserId { get; set; }
-        [ForeignKey("UserId")]
-        public UserModel? User { get; set; }
+        //public string? UserId { get; set; }
+        //[ForeignKey("UserId")]
+        //public UserModel? User { get; set; }
     }
 }

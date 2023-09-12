@@ -151,16 +151,16 @@ namespace MeetingRoom.Controllers
             return View(obj);
         }
 
-        public IActionResult SeeParticipant(BookingRequestModel model)
-        {
-            IEnumerable<SelectListItem> participantsList = _context.Participants.Select(
-                u => new SelectListItem
-                {
-                    Text=u.User.UserName, 
-                    Value=u.Id.ToString()
-                });
-            return View(participantsList);
-        }
+        //public IActionResult SeeParticipant(BookingRequestModel model)
+        //{
+        //    IEnumerable<SelectListItem> participantsList = _context.Participants.Select(
+        //        u => new SelectListItem
+        //        {
+        //            Text=u.User.UserName, 
+        //            Value=u.Id.ToString()
+        //        });
+        //    return View(participantsList);
+        //}
 
         public async Task<IActionResult> AddParticipants(Participants participants)
         {
@@ -172,7 +172,7 @@ namespace MeetingRoom.Controllers
                 }
             );
 
-            var users = _context.UserModel.ToList();
+            //var users = _context.UserModel.ToList();
 
             ViewBag.userList = userList;
 
@@ -208,12 +208,11 @@ namespace MeetingRoom.Controllers
             {
                 UserId = obj.UserId,
                 BookingId = obj.BookingId
-
             };
 
             _context.Participants.Add(participant);
             await _context.SaveChangesAsync();
-            return View("Index");
+            return RedirectToAction("Index");
         }
     }
 }

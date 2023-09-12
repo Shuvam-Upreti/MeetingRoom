@@ -21,29 +21,33 @@
             <th>
                 @Html.DisplayNameFor(model => model.PhoneNumber)
             </th>
-           
+
             <th>Actions</th>
         </tr>
     </thead>
     <tbody>
+
         @foreach (var user in Model)
         {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => user.UserName)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => user.Email)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => user.PhoneNumber)
-                </td>
-              
-                <td>
-                    <a class="btn btn-primary" asp-controller="Account" asp-action="Edit" asp-route-id="@user.UserName">Edit</a>
-                    <a class="btn btn-danger" asp-controller="Account" asp-action="Delete" asp-route-id="@user.UserName">Delete</a>
-                </td>
-            </tr>
+            if (user != null)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => user.UserName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => user.Email)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => user.PhoneNumber)
+                    </td>
+
+                    <td>
+                        <a class="btn btn-primary" asp-action="Edit" asp-route-id="@user.Id">Edit</a>
+                        <a class="btn btn-danger" asp-controller="Account" asp-action="Delete" asp-route-id="@user.UserName">Delete</a>
+                    </td>
+                </tr>
+            }
         }
     </tbody>
 </table>

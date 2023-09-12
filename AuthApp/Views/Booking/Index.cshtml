@@ -31,27 +31,35 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
+        @if (Model != null)
         {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Purpose)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.StartDateTime)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.EndDateTime)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.RoomId)
-                </td>
-                <td>
-                    <a class="btn btn-primary" asp-action="AddParticipants" asp-route-id="@item.BookingId">Add Participants</a>
-                    <a class="btn btn-primary" asp-action="Edit" asp-route-id="@item.BookingId">Edit</a>
-                    <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.BookingId">Delete</a>
-                </td>
-            </tr>
+
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Purpose)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.StartDateTime)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.EndDateTime)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.RoomId)
+                    </td>
+                    <td>
+                        <a class="btn btn-primary" asp-action="AddParticipants" asp-route-id="@item.BookingId">Add Participants</a>
+                        <a class="btn btn-primary" asp-action="Edit" asp-route-id="@item.BookingId">Edit</a>
+                        <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.BookingId">Delete</a>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <p>@Model is null.</p>
         }
     </tbody>
 </table>
