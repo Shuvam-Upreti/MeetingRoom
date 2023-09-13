@@ -20,7 +20,7 @@ namespace MeetingRoom.Controllers
 
         public async Task<IActionResult> Index()
         {
-            IEnumerable <Booking> rooms = _context.Bookings.ToList();
+            IEnumerable<Booking> rooms = _context.Bookings.ToList();
             return View(rooms);
         }
         public async Task<IActionResult> Create()
@@ -53,17 +53,40 @@ namespace MeetingRoom.Controllers
 
             if (ModelState.IsValid)
             {
-                var bookingItem = new Booking()
+                var bookingss = _context.Bookings.Where(b => b.RoomId == bookings.RoomId).ToList(); ;
+                bool hasOverlap = false;
+                foreach (var existingbooking in bookingss)
                 {
-                    RoomId = bookings.RoomId,
-                    Purpose = bookings.Purpose,
-                    StartDateTime = bookings.StartDateTime,
-                    EndDateTime = bookings.EndDateTime,
-                };
-                _context.Bookings.Add(bookingItem);
-                _context.SaveChanges();
-                return RedirectToAction("Index");
+
+                    if ((bookings.StartDateTime >= existingbooking.StartDateTime && bookings.StartDateTime < existingbooking.EndDateTime) ||
+                            (bookings.EndDateTime > existingbooking.StartDateTime && bookings.EndDateTime <= existingbooking.EndDateTime))
+                    {
+                        // There is an overlap
+                        hasOverlap = true;
+                        break;
+                    }
+                }
+
+                if (!hasOverlap)
+                {
+                    var bookingItem = new Booking()
+                    {
+                        RoomId = bookings.RoomId,
+                        Purpose = bookings.Purpose,
+                        StartDateTime = bookings.StartDateTime,
+                        EndDateTime = bookings.EndDateTime,
+                    };
+                    _context.Bookings.Add(bookingItem);
+                    _context.SaveChanges();
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    TempData["CustomMessage"] = "Room is already booked during this time slot.";
+                    return View(bookings);
+                }
             }
+
             return BadRequest(ModelState);
 
         }
@@ -150,17 +173,6 @@ namespace MeetingRoom.Controllers
             }
             return View(obj);
         }
-
-        //public IActionResult SeeParticipant(BookingRequestModel model)
-        //{
-        //    IEnumerable<SelectListItem> participantsList = _context.Participants.Select(
-        //        u => new SelectListItem
-        //        {
-        //            Text=u.User.UserName, 
-        //            Value=u.Id.ToString()
-        //        });
-        //    return View(participantsList);
-        //}
 
         public async Task<IActionResult> AddParticipants(Participants participants)
         {

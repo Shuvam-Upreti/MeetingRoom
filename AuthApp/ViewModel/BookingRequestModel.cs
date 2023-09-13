@@ -28,7 +28,7 @@ namespace MeetingRoom.ViewModel
 
         //[Display(Name = "Status")]
         //public string Status { get; set; } = "Available";
-        //public string? UserId { get; set; }
+        public string? UserId { get; set; }
         //public int? BookingId { get; set; }
     }
 }

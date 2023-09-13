@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Permissions;
 
-namespace Ecom.web.Controllers
+namespace MeetingRoom.Controllers
 {
 
     public class AccountController : Controller
@@ -17,7 +17,7 @@ namespace Ecom.web.Controllers
         private UserManager<IdentityUser> _userManager;
         private RoleManager<IdentityRole> _roleManager;
         private SignInManager<IdentityUser> _singInManager;
-        public AccountController(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, SignInManager<IdentityUser> singInManager, ApplicationDbContext dbContext )
+        public AccountController(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, SignInManager<IdentityUser> singInManager, ApplicationDbContext dbContext)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -26,7 +26,7 @@ namespace Ecom.web.Controllers
         }
         public IActionResult Index()
         {
-            var users = _userManager.Users.ToList(); 
+            var users = _userManager.Users.ToList();
             return View(users);
         }
 
@@ -39,7 +39,7 @@ namespace Ecom.web.Controllers
                 Value = x.Name,
                 Text = x.Name
             }).ToList();
-            
+
             return View();
 
         }
@@ -50,7 +50,7 @@ namespace Ecom.web.Controllers
             {
                 UserName = user.UserName,
                 Email = user.Email,
-                PasswordHash = user.Password,   
+                PasswordHash = user.Password,
                 PhoneNumber = user.Phone,
             };
             IdentityResult res = await _userManager.CreateAsync(iUser, user.Password);
@@ -78,7 +78,7 @@ namespace Ecom.web.Controllers
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-               
+
                 return NotFound();
             }
 
@@ -96,7 +96,7 @@ namespace Ecom.web.Controllers
                 UserName = user.UserName,
                 Email = user.Email,
                 Phone = user.PhoneNumber,
-                Role = userRoles.FirstOrDefault() 
+                Role = userRoles.FirstOrDefault()
             };
 
             ViewBag.Roles = roles;
