@@ -1,6 +1,7 @@
 ﻿using MeetingRoom.Data;
 using MeetingRoom.Models;
 using MeetingRoom.Models.AuthModel;
+using MeetingRoom.Repository.IRepository;
 using MeetingRoom.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -10,22 +11,23 @@ namespace MeetingRoom.Controllers
 {
     public class BookingController : Controller
     {
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ApplicationDbContext _context;
 
-        public BookingController(ApplicationDbContext context)
+        public BookingController(IUnitOfWork unitOfWork, ApplicationDbContext context)
         {
+            _unitOfWork = unitOfWork;
             _context = context;
-
         }
 
         public async Task<IActionResult> Index()
         {
-            IEnumerable<Booking> rooms = _context.Bookings.ToList();
+            IEnumerable<Booking> rooms = _unitOfWork.Booking.GetAll();
             return View(rooms);
         }
         public async Task<IActionResult> Create()
         {
-            IEnumerable<SelectListItem> roomList = _context.RoomModels.Select(
+            IEnumerable<SelectListItem> roomList = _unitOfWork.Room.GetAll().Select(
                 u => new SelectListItem
                 {
                     Text = u.RoomName,
@@ -42,7 +44,7 @@ namespace MeetingRoom.Controllers
                  }
              );
 
-            var users = _context.UserModel.ToList();
+            //var users = _unitOfWork.UserModel.ToList();
 
             ViewBag.userList = userList;
             return View();
@@ -53,7 +55,7 @@ namespace MeetingRoom.Controllers
 
             if (ModelState.IsValid)
             {
-                var bookingss = _context.Bookings.Where(b => b.RoomId == bookings.RoomId).ToList(); ;
+                var bookingss = _unitOfWork.Booking.GetAll().Where(b => b.RoomId == bookings.RoomId).ToList(); ;
                 bool hasOverlap = false;
                 foreach (var existingbooking in bookingss)
                 {
@@ -76,8 +78,8 @@ namespace MeetingRoom.Controllers
                         StartDateTime = bookings.StartDateTime,
                         EndDateTime = bookings.EndDateTime,
                     };
-                    _context.Bookings.Add(bookingItem);
-                    _context.SaveChanges();
+                    _unitOfWork.Booking.Add(bookingItem);
+                    _unitOfWork.Save();
                     return RedirectToAction("Index");
                 }
                 else
@@ -93,14 +95,14 @@ namespace MeetingRoom.Controllers
 
         public async Task<IActionResult> Edit(int id)
         {
-            var bookingobj = await _context.Bookings.FindAsync(id);
+            var bookingobj =  _unitOfWork.Booking.GetFirstorDefault(u=>u.BookingId==id);
 
             if (bookingobj == null)
             {
                 return NotFound();
             }
 
-            IEnumerable<SelectListItem> roomList = _context.RoomModels.Select(
+            IEnumerable<SelectListItem> roomList = _unitOfWork.Room.GetAll().Select(
                 u => new SelectListItem
                 {
                     Text = u.RoomName,
@@ -110,7 +112,7 @@ namespace MeetingRoom.Controllers
             ViewBag.roomList = roomList;
 
 
-            List<Participants> participants = _context.Participants.ToList();
+            List<Participants> participants = _unitOfWork.Participants.GetAll().ToList();
             List<Participants> participantslist = new List<Participants>();
 
             foreach (var item in participants)
@@ -146,15 +148,15 @@ namespace MeetingRoom.Controllers
 
             if (obj != null)
             {
-                _context.Bookings.Update(obj);
-                await _context.SaveChangesAsync();
+                _unitOfWork.Booking.Update(obj);
+                   _unitOfWork.Save();
                 return RedirectToAction("Index");
             }
             return View(obj);
         }
         public async Task<IActionResult> Delete(int id)
         {
-            var obj = await _context.Bookings.FindAsync(id);
+            var obj =  _unitOfWork.Booking.GetFirstorDefault(u => u.BookingId == id);
             if (obj == null)
             {
                 return NotFound();
@@ -167,8 +169,8 @@ namespace MeetingRoom.Controllers
         {
             if (obj != null)
             {
-                _context.Bookings.Remove(obj);
-                await _context.SaveChangesAsync();
+                _unitOfWork.Booking.Remove(obj);
+                 _unitOfWork.Save();
                 return RedirectToAction("Index");
             }
             return View(obj);
@@ -188,15 +190,13 @@ namespace MeetingRoom.Controllers
 
             ViewBag.userList = userList;
 
-            IEnumerable<SelectListItem> bookingList = _context.Bookings.Select(
+            IEnumerable<SelectListItem> bookingList = _unitOfWork.Booking.GetAll().Select(
                 u => new SelectListItem
                 {
                     Text = u.Purpose,
                     Value = u.BookingId.ToString()
                 }
             );
-
-            var bookings = _context.Bookings.ToList();
 
             ViewBag.bookingList = bookingList;
 
@@ -213,8 +213,8 @@ namespace MeetingRoom.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddParticipants(ParticipantVModel obj)
         {
-            var user = await _context.Users.FindAsync(obj.UserId);
-            var bookings = await _context.Bookings.FindAsync(obj.BookingId);
+            var user =  _context.Users.FindAsync(obj.UserId);
+            var bookings = _unitOfWork.Booking.GetFirstorDefault(u => u.BookingId == obj.BookingId);
 
             Participants participant = new Participants
             {
@@ -222,8 +222,8 @@ namespace MeetingRoom.Controllers
                 BookingId = obj.BookingId
             };
 
-            _context.Participants.Add(participant);
-            await _context.SaveChangesAsync();
+            _unitOfWork.Participants.Add(participant);
+             _unitOfWork.Save();
             return RedirectToAction("Index");
         }
     }

@@ -1,5 +1,7 @@
 //using Ecom.web.Data;
 using MeetingRoom.Data;
+using MeetingRoom.Repository;
+using MeetingRoom.Repository.IRepository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,6 +21,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
+builder.Services.AddScoped<IUnitOfWork,UnitOfWork>();
 builder.Services.Configure<IdentityOptions>(op =>
 {
     op.Password.RequireNonAlphanumeric = false;

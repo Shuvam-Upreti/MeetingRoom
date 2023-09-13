@@ -46,19 +46,36 @@ namespace MeetingRoom.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(UserModel user)
         {
-            IdentityUser iUser = new IdentityUser
+
+            var existingUserByUsername = await _userManager.FindByNameAsync(user.UserName);
+            var existingUserByEmail = await _userManager.FindByEmailAsync(user.Email);
+
+            if (existingUserByUsername != null)
             {
-                UserName = user.UserName,
-                Email = user.Email,
-                PasswordHash = user.Password,
-                PhoneNumber = user.Phone,
-            };
-            IdentityResult res = await _userManager.CreateAsync(iUser, user.Password);
-            if (res.Succeeded)
+                ModelState.AddModelError("UserName", "User with the same username already exists.");
+            }
+
+            if (existingUserByEmail != null)
             {
-                await _userManager.AddToRoleAsync(iUser, user.Role);
-                await _dbContext.SaveChangesAsync();
-                return Redirect("/");
+                ModelState.AddModelError("Email", "User with the same email already exists.");
+            }
+
+            if (ModelState.IsValid)
+            {
+
+                var iUser = new IdentityUser
+                {
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    PhoneNumber = user.Phone,
+                };
+                IdentityResult res = await _userManager.CreateAsync(iUser, user.Password);
+                if (res.Succeeded)
+                {
+                    await _userManager.AddToRoleAsync(iUser, user.Role);
+                    await _dbContext.SaveChangesAsync();
+                    return Redirect("/");
+                }
             }
             var roles = _roleManager.Roles
                 .Select(x => new SelectListItem
