@@ -60,7 +60,7 @@ namespace MeetingRoom.Controllers
                 ModelState.AddModelError("Email", "User with the same email already exists.");
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
 
                 var iUser = new IdentityUser
@@ -90,9 +90,9 @@ namespace MeetingRoom.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> Edit(string userId)
+        public async Task<IActionResult> Edit(string id)
         {
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await _userManager.FindByIdAsync(id);
             if (user == null)
             {
 
@@ -123,7 +123,7 @@ namespace MeetingRoom.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(UserModel user)
         {
-            var existingUser = await _userManager.FindByIdAsync(user.UserId);
+            var existingUser = await _userManager.FindByIdAsync(user.Id);
             if (existingUser == null)
             {
                 return NotFound();
@@ -146,14 +146,14 @@ namespace MeetingRoom.Controllers
             else
             {
                 ModelState.AddModelError("", "Failed to update user.");
-                return View(user);
             }
+            return View(user);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Delete(string userId)
+        public async Task<IActionResult> Delete(string id)
         {
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await _userManager.FindByIdAsync(id);
             if (user == null)
             {
                 return NotFound();
@@ -167,8 +167,8 @@ namespace MeetingRoom.Controllers
             else
             {
                 ModelState.AddModelError("", "Failed to delete user.");
-                return View();
             }
+            return View("Index");
         }
 
         [HttpGet]

@@ -43,13 +43,20 @@ namespace MeetingRoom.Controllers
         {
             return View();
         }
-
         [Authorize(Roles = "admin")]
         [HttpPost]
         public async Task<IActionResult> Create(RoomModel roomModel, IFormFile? file)
         {
             if (ModelState.IsValid)
             {
+                // Check if a room with the same name already exists
+                var existingRoom = await _context.RoomModels.FirstOrDefaultAsync(r => r.RoomName == roomModel.RoomName);
+                if (existingRoom != null)
+                {
+                    ModelState.AddModelError("RoomName", "A room with the same name already exists.");
+                    return View(roomModel);
+                }
+
                 string wwwrootPath = _hostEnvironment.WebRootPath;
 
                 if (file != null)

@@ -6,6 +6,8 @@ using MeetingRoom.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Diagnostics;
+using System.Net.Mail;
+using System.Net;
 
 namespace MeetingRoom.Controllers
 {
@@ -95,7 +97,7 @@ namespace MeetingRoom.Controllers
 
         public async Task<IActionResult> Edit(int id)
         {
-            var bookingobj =  _unitOfWork.Booking.GetFirstorDefault(u=>u.BookingId==id);
+            var bookingobj = _unitOfWork.Booking.GetFirstorDefault(u => u.BookingId == id);
 
             if (bookingobj == null)
             {
@@ -149,14 +151,14 @@ namespace MeetingRoom.Controllers
             if (obj != null)
             {
                 _unitOfWork.Booking.Update(obj);
-                   _unitOfWork.Save();
+                _unitOfWork.Save();
                 return RedirectToAction("Index");
             }
             return View(obj);
         }
         public async Task<IActionResult> Delete(int id)
         {
-            var obj =  _unitOfWork.Booking.GetFirstorDefault(u => u.BookingId == id);
+            var obj = _unitOfWork.Booking.GetFirstorDefault(u => u.BookingId == id);
             if (obj == null)
             {
                 return NotFound();
@@ -170,7 +172,7 @@ namespace MeetingRoom.Controllers
             if (obj != null)
             {
                 _unitOfWork.Booking.Remove(obj);
-                 _unitOfWork.Save();
+                _unitOfWork.Save();
                 return RedirectToAction("Index");
             }
             return View(obj);
@@ -186,7 +188,7 @@ namespace MeetingRoom.Controllers
                 }
             );
 
-            //var users = _context.UserModel.ToList();
+            var users = _context.UserModel.ToList();
 
             ViewBag.userList = userList;
 
@@ -213,7 +215,7 @@ namespace MeetingRoom.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddParticipants(ParticipantVModel obj)
         {
-            var user =  _context.Users.FindAsync(obj.UserId);
+            var user = _context.Users.FindAsync(obj.UserId);
             var bookings = _unitOfWork.Booking.GetFirstorDefault(u => u.BookingId == obj.BookingId);
 
             Participants participant = new Participants
@@ -223,8 +225,49 @@ namespace MeetingRoom.Controllers
             };
 
             _unitOfWork.Participants.Add(participant);
-             _unitOfWork.Save();
+            _unitOfWork.Save();
+
+
+            var userFromDb = _context.Users.Where(u => u.Id == obj.UserId).FirstOrDefault();
+
+            string fromMail = "shuvamupreti@gmail.com";
+            string fromPassword = "fiionqhfopfdhfgo";
+            string toMail = userFromDb.Email;
+
+            using (var message = new MailMessage())
+            {
+
+                message.From = new MailAddress(fromMail);
+                message.To.Add(new MailAddress(toMail));
+                message.Subject = "Invitation to Meeting!";
+                message.Body = "You have been invited into an meeting";
+
+                using (var smtp = new SmtpClient("smtp.gmail.com")
+                {
+                    Port = 587,
+                    Credentials = new NetworkCredential(fromMail, fromPassword),
+                    EnableSsl = true,
+                })
+                    smtp.Send(message);
+            }
             return RedirectToAction("Index");
         }
-    }
-}
+
+       // [HttpPost]
+       // [ValidateAntiForgeryToken]
+        public IActionResult RemoveParticipant(int id)
+        {
+            var participant = _unitOfWork.Participants.GetFirstorDefault(p => p.Id == id);
+
+            if (participant == null)
+            {
+                return NotFound();
+            }
+
+            _unitOfWork.Participants.Remove(participant);
+            _unitOfWork.Save();
+
+            return RedirectToAction("Index");
+        }
+
+    }}

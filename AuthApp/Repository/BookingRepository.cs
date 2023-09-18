@@ -12,8 +12,6 @@ namespace MeetingRoom.Repository
                 _context = context;
             }
 
-       
-
         public void Update(Booking booking)
         {
            _context.Bookings.Update(booking);
