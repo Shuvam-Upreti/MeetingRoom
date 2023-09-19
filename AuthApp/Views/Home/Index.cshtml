@@ -4,6 +4,7 @@
 @{
     ViewData["Title"] = "Home Page";
 }
+<partial name="_Notification" />
 <br />
 <div>
     <div>
@@ -18,11 +19,11 @@
     {
         <a asp-controller="Booking" asp-action="Create" style="text-decoration:none">
 
-            <div style="display:flex; flex-direction: row;">
+            <div class=" row pb-2 " style="display:flex; ">
 
                 @foreach (var room in Model)
                 {
-                    <div class="col-lg-3 col-md-6" style="display:flex; flex-direction: row;">
+                    <div class="col-lg-3 col-md-6" style="display:flex; flex-direction: row; margin-bottom:50px">
 
                         <div class="btn btn-secondary" style="display: flex; flex-direction: column; width: 250px; height: 250px; border-radius: 0; overflow: hidden; border: none; cursor: pointer;">
                             <div style="flex: 1; display: flex; justify-content: center; align-items: center; overflow:hidden ">

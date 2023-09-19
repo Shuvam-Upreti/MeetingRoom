@@ -54,7 +54,7 @@ namespace MeetingRoom.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(BookingRequestModel bookings)
         {
-
+            var rooms= _unitOfWork.Room.GetAll();
             if (ModelState.IsValid)
             {
                 var bookingss = _unitOfWork.Booking.GetAll().Where(b => b.RoomId == bookings.RoomId).ToList(); ;
@@ -63,7 +63,8 @@ namespace MeetingRoom.Controllers
                 {
 
                     if ((bookings.StartDateTime >= existingbooking.StartDateTime && bookings.StartDateTime < existingbooking.EndDateTime) ||
-                            (bookings.EndDateTime > existingbooking.StartDateTime && bookings.EndDateTime <= existingbooking.EndDateTime))
+                            (bookings.EndDateTime > existingbooking.StartDateTime && bookings.EndDateTime <= existingbooking.EndDateTime) ||
+                            (bookings.StartDateTime <= bookings.EndDateTime))
                     {
                         // There is an overlap
                         hasOverlap = true;
@@ -82,11 +83,12 @@ namespace MeetingRoom.Controllers
                     };
                     _unitOfWork.Booking.Add(bookingItem);
                     _unitOfWork.Save();
+                    TempData["success"] = "Created Sucessfully";
                     return RedirectToAction("Index");
                 }
                 else
                 {
-                    TempData["CustomMessage"] = "Room is already booked during this time slot.";
+                    TempData["error"] = "Room is already booked during this time slot.";
                     return View(bookings);
                 }
             }
@@ -138,7 +140,10 @@ namespace MeetingRoom.Controllers
             {
                 RoomId = bookingobj.RoomId,
                 Participants = participantslist,
-                BookingId = id
+                BookingId = bookingobj.BookingId,
+                StartDateTime = bookingobj.StartDateTime,
+                EndDateTime = bookingobj.EndDateTime,
+                Purpose = bookingobj.Purpose
             };
 
             return View(model);
@@ -152,6 +157,7 @@ namespace MeetingRoom.Controllers
             {
                 _unitOfWork.Booking.Update(obj);
                 _unitOfWork.Save();
+                TempData["success"] = "Edited Sucessfully";
                 return RedirectToAction("Index");
             }
             return View(obj);
@@ -173,12 +179,13 @@ namespace MeetingRoom.Controllers
             {
                 _unitOfWork.Booking.Remove(obj);
                 _unitOfWork.Save();
+                TempData["success"] = "Deleted Sucessfully";
                 return RedirectToAction("Index");
             }
             return View(obj);
         }
 
-        public async Task<IActionResult> AddParticipants(Participants participants)
+        public async Task<IActionResult> AddParticipants(int id)
         {
             IEnumerable<SelectListItem> userList = _context.Users.Select(
                 u => new SelectListItem
@@ -199,62 +206,65 @@ namespace MeetingRoom.Controllers
                     Value = u.BookingId.ToString()
                 }
             );
-
             ViewBag.bookingList = bookingList;
+            var booking = _unitOfWork.Booking.GetFirstorDefault(u => u.BookingId == id);
 
-
-            //Participants obj = new Participants
-            //{
-            //    BookingId = participants.BookingId,
-            //    UserId = participants.UserId
-            //};
-            return View();
+            ParticipantVModel model = new ParticipantVModel
+            {
+                BookingId=booking.BookingId
+            };
+            return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddParticipants(ParticipantVModel obj)
         {
-            var user = _context.Users.FindAsync(obj.UserId);
+            var user = await _context.Users.FindAsync(obj.UserId);
             var bookings = _unitOfWork.Booking.GetFirstorDefault(u => u.BookingId == obj.BookingId);
 
-            Participants participant = new Participants
+            var existingParticipant = _unitOfWork.Participants.GetFirstorDefault(p => p.UserId == obj.UserId && p.BookingId == obj.BookingId);
+
+            if (existingParticipant == null)
             {
-                UserId = obj.UserId,
-                BookingId = obj.BookingId
-            };
-
-            _unitOfWork.Participants.Add(participant);
-            _unitOfWork.Save();
-
-
-            var userFromDb = _context.Users.Where(u => u.Id == obj.UserId).FirstOrDefault();
-
-            string fromMail = "shuvamupreti@gmail.com";
-            string fromPassword = "fiionqhfopfdhfgo";
-            string toMail = userFromDb.Email;
-
-            using (var message = new MailMessage())
-            {
-
-                message.From = new MailAddress(fromMail);
-                message.To.Add(new MailAddress(toMail));
-                message.Subject = "Invitation to Meeting!";
-                message.Body = "You have been invited into an meeting";
-
-                using (var smtp = new SmtpClient("smtp.gmail.com")
+                // Participant is not added, so add them
+                Participants participant = new Participants
                 {
-                    Port = 587,
-                    Credentials = new NetworkCredential(fromMail, fromPassword),
-                    EnableSsl = true,
-                })
-                    smtp.Send(message);
+                    UserId = obj.UserId,
+                    BookingId = obj.BookingId
+                };
+
+                _unitOfWork.Participants.Add(participant);
+                TempData["success"] = "Participant Added Sucessfully";
+                _unitOfWork.Save();
+
+                //mail wala
+                var userFromDb = _context.Users.Where(u => u.Id == obj.UserId).FirstOrDefault();
+
+                string fromMail = "shuvamupreti@gmail.com";
+                string fromPassword = "fiionqhfopfdhfgo";
+                string toMail = userFromDb.Email;
+
+                using (var message = new MailMessage())
+                {
+
+                    message.From = new MailAddress(fromMail);
+                    message.To.Add(new MailAddress(toMail));
+                    message.Subject = "Invitation to Meeting!";
+                    message.Body = "You have been invited into an meeting";
+
+                    using (var smtp = new SmtpClient("smtp.gmail.com")
+                    {
+                        Port = 587,
+                        Credentials = new NetworkCredential(fromMail, fromPassword),
+                        EnableSsl = true,
+                    })
+                        smtp.Send(message);
+                }
             }
             return RedirectToAction("Index");
         }
 
-       // [HttpPost]
-       // [ValidateAntiForgeryToken]
         public IActionResult RemoveParticipant(int id)
         {
             var participant = _unitOfWork.Participants.GetFirstorDefault(p => p.Id == id);
@@ -266,8 +276,9 @@ namespace MeetingRoom.Controllers
 
             _unitOfWork.Participants.Remove(participant);
             _unitOfWork.Save();
-
+            TempData["success"] = "Participant Removed Sucessfully";
             return RedirectToAction("Index");
         }
 
-    }}
+    }
+}

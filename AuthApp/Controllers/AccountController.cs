@@ -93,7 +93,7 @@ namespace MeetingRoom.Controllers
         public async Task<IActionResult> Edit(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
-            if (user == null)
+            if (user is null)
             {
 
                 return NotFound();

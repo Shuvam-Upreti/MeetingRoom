@@ -1,5 +1,5 @@
 ﻿@model MeetingRoom.Models.RoomModel
-
+<partial name="_Notification" />
 <form method="post" asp-action="Delete">
     <input asp-for="RoomId" hidden />
     <div class="border p-3 mt-3">
@@ -32,7 +32,7 @@
 
     </div>
     <button type="submit" onclick="return ValidateInput()" class="btn btn-danger" style="width:150px">Delete</button>
-    <a asp-controller="Room" asp-action="Index" class="btn btn-secondary" style="width:150px">Back to List</a>
+    <a asp-controller="Home" asp-action="All" class="btn btn-secondary" style="width:150px">Back to List</a>
 </form>
 
 @section Scripts{

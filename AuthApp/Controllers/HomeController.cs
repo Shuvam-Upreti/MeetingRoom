@@ -75,10 +75,10 @@ namespace MeetingRoom.Controllers
 
                 await _context.RoomModels.AddAsync(roomModel);
                 await _context.SaveChangesAsync();
-
+                TempData["success"] = "Created Sucessfully";
                 return RedirectToAction("Index");
             }
-
+            TempData["error"] = "Not Created Sucessfully";
             return View(roomModel);
         }
 
@@ -100,6 +100,7 @@ namespace MeetingRoom.Controllers
                     System.IO.File.Delete(oldImagePath);
                 }
             }
+
             return View(obj);
         }
 
@@ -127,7 +128,7 @@ namespace MeetingRoom.Controllers
 
                 _context.RoomModels.Update(obj);
                 await _context.SaveChangesAsync();
-
+                TempData["success"] = "Edited Sucessfully";
                 return RedirectToAction("Index");
             }
 
@@ -155,6 +156,7 @@ namespace MeetingRoom.Controllers
                 _context.RoomModels.Remove(obj);
                 await _context.SaveChangesAsync();
 
+                TempData["success"] = "Deleted Sucessfully";
                 return RedirectToAction("Index");
             }
 

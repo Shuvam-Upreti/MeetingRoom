@@ -3,14 +3,14 @@
 @{
     ViewData["Title"] = "Edit";
 }
-
+<partial name="_Notification" />
 <h1>Edit</h1>
 
 <h4>Booking</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form  asp-action="Edit">
+        <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="BookingId" />
             <div class="form-group">
@@ -34,19 +34,21 @@
                 <span asp-validation-for="RoomId" class="text-danger"></span>
             </div>
 
-            <div>
-                <lablel>
+            <div class="form-group">
+                <label>
                     Participants:
-                </lablel>
-                @foreach (var item in Model.Participants)
-                {
-                    <label>
-
-                        <li>@item.User.UserName</li><a class="btn btn-primary" asp-controller="Booking" asp-action="RemoveParticipant" asp-route-id="@item.Id">Remove</a>
-                    </label>
-                }
+                    @foreach (var item in Model.Participants)
+                    {
+                        <label style="display:flex; text-decoration:none;">
+                            <ul >@item.User.UserName</ul>
+                            <button style="text-decoration:none; border:solid white 2px;margin-left:30px;color" asp-controller="Booking" asp-action="RemoveParticipant" asp-route-id="@item.Id">Remove</button>
+                            <br>
+                        </label>
+                    }
+                </label>
             </div>
-         
+            <br />
+
 
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
