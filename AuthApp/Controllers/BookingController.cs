@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Diagnostics;
 using System.Net.Mail;
 using System.Net;
+using MeetingRoom.Services.IServices;
 
 namespace MeetingRoom.Controllers
 {
@@ -15,11 +16,13 @@ namespace MeetingRoom.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ApplicationDbContext _context;
+        private readonly IEmailServices _emailServices;
 
-        public BookingController(IUnitOfWork unitOfWork, ApplicationDbContext context)
+        public BookingController(IUnitOfWork unitOfWork, ApplicationDbContext context, IEmailServices emailServices)
         {
             _unitOfWork = unitOfWork;
             _context = context;
+            _emailServices = emailServices;
         }
 
         public async Task<IActionResult> Index()
@@ -80,6 +83,7 @@ namespace MeetingRoom.Controllers
                         Purpose = bookings.Purpose,
                         StartDateTime = bookings.StartDateTime,
                         EndDateTime = bookings.EndDateTime,
+                        UserId=bookings.UserId
                     };
                     _unitOfWork.Booking.Add(bookingItem);
                     _unitOfWork.Save();
@@ -98,7 +102,7 @@ namespace MeetingRoom.Controllers
         }
 
         public async Task<IActionResult> Edit(int id)
-        {
+        { 
             var bookingobj = _unitOfWork.Booking.GetFirstorDefault(u => u.BookingId == id);
 
             if (bookingobj == null)
@@ -238,29 +242,8 @@ namespace MeetingRoom.Controllers
                 TempData["success"] = "Participant Added Sucessfully";
                 _unitOfWork.Save();
 
-                //mail wala
-                var userFromDb = _context.Users.Where(u => u.Id == obj.UserId).FirstOrDefault();
+                _emailServices.SendEmail(obj);
 
-                string fromMail = "shuvamupreti@gmail.com";
-                string fromPassword = "fiionqhfopfdhfgo";
-                string toMail = userFromDb.Email;
-
-                using (var message = new MailMessage())
-                {
-
-                    message.From = new MailAddress(fromMail);
-                    message.To.Add(new MailAddress(toMail));
-                    message.Subject = "Invitation to Meeting!";
-                    message.Body = "You have been invited into an meeting";
-
-                    using (var smtp = new SmtpClient("smtp.gmail.com")
-                    {
-                        Port = 587,
-                        Credentials = new NetworkCredential(fromMail, fromPassword),
-                        EnableSsl = true,
-                    })
-                        smtp.Send(message);
-                }
             }
             return RedirectToAction("Index");
         }

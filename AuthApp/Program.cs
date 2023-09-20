@@ -2,6 +2,8 @@
 using MeetingRoom.Data;
 using MeetingRoom.Repository;
 using MeetingRoom.Repository.IRepository;
+using MeetingRoom.Services.IServices;
+using MeetingRoom.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,6 +24,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
     .AddDefaultTokenProviders();
 
 builder.Services.AddScoped<IUnitOfWork,UnitOfWork>();
+builder.Services.AddScoped<IEmailServices, EmailServices>();
 builder.Services.Configure<IdentityOptions>(op =>
 {
     op.Password.RequireNonAlphanumeric = false;

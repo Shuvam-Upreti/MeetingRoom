@@ -10,7 +10,7 @@
 {
 
     <p>
-        <a class="btn btn-primary" asp-action="Create">Create New</a>
+        <a class="btn btn-primary" asp-action="Create" asp-route-UserId="@User.FindFirstValue(ClaimTypes.NameIdentifier)">Create New</a>
     </p>
 }
 <table class="table">

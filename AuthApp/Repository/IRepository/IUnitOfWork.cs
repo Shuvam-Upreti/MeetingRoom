@@ -1,4 +1,5 @@
 ﻿using MeetingRoom.Models;
+using MeetingRoom.Services.IServices;
 
 namespace MeetingRoom.Repository.IRepository
 {
